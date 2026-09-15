@@ -1,19 +1,17 @@
-"""
-main.py
-
-A minimal FastAPI backend exposing the exposure-scoring logic
-as a real API endpoint. Run with:
-    uvicorn main:app --reload
-Then test with:
-    curl -X POST http://127.0.0.1:8000/scan -H "Content-Type: application/json" -d "{\"username_reused_count\": 2, \"school_public\": true, \"location_public\": true, \"connection_count\": 3}"
-"""
-
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from exposure_score import score_profile
 
 app = FastAPI(title="Mosaic API")
 
+# Allows your Vercel site to call this API from the browser
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 class ProfileInput(BaseModel):
     username_reused_count: int = 0
@@ -21,11 +19,9 @@ class ProfileInput(BaseModel):
     location_public: bool = False
     connection_count: int = 0
 
-
 @app.get("/")
 def root():
     return {"status": "Mosaic API is running"}
-
 
 @app.post("/scan")
 def scan(profile: ProfileInput):
